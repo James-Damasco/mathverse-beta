@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathVerse Express | Epic Educational Learning Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gamePurple: '#6C5CE7',
+                        gameYellow: '#FFD200',
+                        gamePink: '#FF7675',
+                        gameGreen: '#55E6C1',
+                        gameBlue: '#74B9FF',
+                        gameDark: '#2D3436'
+                    },
+                    boxShadow: {
+                        'cartoon-sm': '0 4px 0 #2D3436',
+                        'cartoon': '0 8px 0 #2D3436',
+                        'cartoon-lg': '0 12px 0 #2D3436',
+                        'inner-cartoon': 'inset 0 4px 0 rgba(0,0,0,0.2)'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/app.js"></script>
+
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="css/app.css" />
+    <script src="js/sw.js"></script>
+    <script src="js/pwa.js"></script>
+
+    <link rel="shortcut icon" href="icon/app-icon.png" sizes="1024x1024" />
+    <link rel="icon" href="icon/192x192.png" sizes="192x192" />
+</head>
+
+<body class="bg-[#F0F3FF] text-gameDark overflow-x-hidden min-h-screen">
+
+    <nav id="global-hud"
+        class="hidden fixed top-0 left-0 right-0 bg-white border-b-4 border-gameDark z-40 px-4 py-2 flex justify-between items-center shadow-md">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="App.router.navigate('dashboard')">
+            <div
+                class="w-12 h-12 bg-gameYellow border-2 border-gameDark rounded-xl flex items-center justify-center shadow-cartoon-sm dynamic-bounce">
+                <i class="fa-solid fa-graduation-cap text-2xl text-gameDark"></i>
+            </div>
+            <span class="heading-font text-xl tracking-wide hidden sm:inline-block text-gamePurple">MATHVERSE</span>
+        </div>
+
+        <div class="flex items-center space-x-2 sm:space-x-4">
+            <div
+                class="bg-orange-100 border-2 border-gameDark rounded-full px-3 py-1 flex items-center space-x-1 shadow-cartoon-sm">
+                <i class="fa-solid fa-fire text-orange-500 animate-pulse"></i>
+                <span id="hud-streak" class="text-sm sm:text-base">1 Day</span>
+            </div>
+            <div
+                class="bg-amber-100 border-2 border-gameDark rounded-full px-3 py-1 flex items-center space-x-1 shadow-cartoon-sm">
+                <i class="fa-solid fa-star text-amber-500"></i>
+                <span id="hud-stars" class="text-sm sm:text-base">0</span>
+            </div>
+            <div
+                class="bg-yellow-100 border-2 border-gameDark rounded-full px-3 py-1 flex items-center space-x-1 shadow-cartoon-sm">
+                <i class="fa-solid fa-coins text-yellow-500"></i>
+                <span id="hud-coins" class="text-sm sm:text-base">0</span>
+            </div>
+            <div
+                class="bg-purple-100 border-2 border-gameDark rounded-full px-3 py-1 flex items-center space-x-1 shadow-cartoon-sm">
+                <span class="text-xs bg-gamePurple text-white px-2 py-0.5 rounded-full" id="hud-level-tag">Lv.1</span>
+                <span id="hud-xp" class="text-sm font-bold">0 XP</span>
+            </div>
+
+            <button onclick="App.router.navigate('profile')"
+                class="w-10 h-10 rounded-full border-2 border-gameDark bg-gamePink overflow-hidden shadow-cartoon-sm flex items-center justify-center text-xl transition-transform active:scale-95"
+                id="hud-avatar-frame">
+                🐱
+            </button>
+            <button onclick="App.ui.toggleParentVerification()"
+                class="bg-gameBlue text-white border-2 border-gameDark p-2 rounded-xl text-sm shadow-cartoon-sm hover:bg-blue-400 transition-all">
+                <i class="fa-solid fa-chart-pie"></i> <span class="hidden md:inline">Parents</span>
+            </button>
+        </div>
+    </nav>
+
+    <main id="app-viewport" class="pt-24 pb-8 px-4 max-w-7xl mx-auto min-h-screen flex flex-col justify-center">
+
+        <section id="screen-auth"
+            class="view-panel hidden max-w-md mx-auto w-full bg-white border-4 border-gameDark rounded-3xl p-6 shadow-cartoon relative">
+            <div
+                class="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-gameYellow border-4 border-gameDark rounded-full flex items-center justify-center shadow-cartoon">
+                <span class="text-4xl animate-bounce">🤖</span>
+            </div>
+            <div class="text-center mt-10 mb-6">
+                <h2 class="heading-font text-3xl text-gamePurple">Create Your Hero</h2>
+                <p class="text-gray-500 text-sm mt-1">Embark on your legendary cosmic math journey!</p>
+            </div>
+
+            <form id="auth-form" onsubmit="App.auth.handleRegistration(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gameDark mb-1">Hero Name</label>
+                    <input type="text" id="auth-username" required maxlength="12" placeholder="SuperSolver"
+                        class="w-full border-4 border-gameDark rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-gamePurple/30 transition-all text-lg">
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gameDark mb-2">Choose Your Companion Avatar</label>
+                    <div class="grid grid-cols-4 gap-3" id="avatar-selector-grid"></div>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-gameGreen hover:bg-emerald-400 text-gameDark border-4 border-gameDark font-bold text-xl py-4 rounded-2xl shadow-cartoon active:translate-y-1 active:shadow-cartoon-sm transition-all heading-font tracking-wide">
+                    START ADVENTURE <i class="fa-solid fa-rocket ml-1"></i>
+                </button>
+            </form>
+            <div class="mt-4 text-center">
+                <button onclick="App.auth.triggerGuestMode()" class="text-gamePurple hover:underline text-sm">Or Enter
+                    as Guest Explorer</button>
+            </div>
+        </section>
+
+        <section id="screen-dashboard" class="view-panel hidden space-y-6">
+            <div
+                class="bg-gradient-to-r from-gamePurple to-indigo-600 border-4 border-gameDark rounded-3xl p-6 text-white shadow-cartoon flex flex-col md:flex-row items-center justify-between relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10 text-9xl transform translate-x-10 translate-y-5">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div class="flex items-center space-x-6 z-10">
+                    <div class="w-24 h-24 bg-white border-4 border-gameDark rounded-2xl flex items-center justify-center text-5xl shadow-cartoon"
+                        id="dash-avatar-icon">
+                        🐱
+                    </div>
+                    <div>
+                        <h1 class="heading-font text-3xl md:text-4xl tracking-wide mb-1">Welcome Back, <span
+                                id="dash-welcome-name">Explorer</span>!</h1>
+                        <p class="text-purple-100 text-sm md:text-base max-w-xl">Your mathematical skills are changing
+                            the universe. Ready to unlock the secrets of next world?</p>
+                        <div
+                            class="mt-4 bg-indigo-900 border-2 border-gameDark rounded-full h-6 w-full relative overflow-hidden shadow-inner-cartoon">
+                            <div id="dash-xp-progress" class="bg-gameGreen h-full transition-all duration-500"
+                                style="width: 30%"></div>
+                            <span id="dash-xp-text"
+                                class="absolute inset-0 text-xs flex items-center justify-center font-bold text-white shadow-sm">30
+                                / 100 XP</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 md:mt-0 z-10 w-full md:w-auto">
+                    <button onclick="App.game.initiateContinueGame()"
+                        class="w-full md:w-auto bg-gameYellow text-gameDark border-4 border-gameDark px-8 py-4 rounded-2xl shadow-cartoon font-bold text-xl heading-font tracking-wider hover:bg-amber-400 active:translate-y-1 active:shadow-cartoon-sm transition-all flex items-center justify-center gap-2">
+                        CONTINUE QUEST <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white border-4 border-gameDark rounded-3xl p-5 shadow-cartoon">
+                <h3 class="heading-font text-xl text-gameDark mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-gamePink"></i> Select Calculation Difficulty Level
+                </h3>
+                <div class="grid grid-cols-3 gap-4" id="difficulty-selector-rack">
+                    <button onclick="App.game.setDifficulty('easy')" id="diff-btn-easy"
+                        class="border-4 border-gameDark rounded-xl py-3 font-bold text-lg heading-font transition-all shadow-cartoon-sm">
+                        EASY <span class="block text-xs normal-case font-sans font-normal text-gray-500">(2
+                            Digits)</span>
+                    </button>
+                    <button onclick="App.game.setDifficulty('medium')" id="diff-btn-medium"
+                        class="border-4 border-gameDark rounded-xl py-3 font-bold text-lg heading-font transition-all shadow-cartoon-sm">
+                        MEDIUM <span class="block text-xs normal-case font-sans font-normal text-gray-500">(3
+                            Digits)</span>
+                    </button>
+                    <button onclick="App.game.setDifficulty('hard')" id="diff-btn-hard"
+                        class="border-4 border-gameDark rounded-xl py-3 font-bold text-lg heading-font transition-all shadow-cartoon-sm">
+                        HARD <span class="block text-xs normal-case font-sans font-normal text-gray-500">(4
+                            Digits)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white border-4 border-gameDark rounded-3xl p-6 shadow-cartoon">
+                        <h3 class="heading-font text-2xl text-gamePurple mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-globe text-gameBlue"></i> Campaign World Hub
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="world-maps-container"></div>
+                    </div>
+
+                    <div class="bg-white border-4 border-gameDark rounded-3xl p-6 shadow-cartoon">
+                        <h3 class="heading-font text-2xl text-gamePink mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-gameYellow"></i> Achievement Showcase
+                        </h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="dashboard-achievements-rack"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-white border-4 border-gameDark rounded-3xl p-6 shadow-cartoon">
+                        <h3 class="heading-font text-2xl text-gameDark mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-gamepad text-gamePurple"></i> Match Mode
+                        </h3>
+                        <div class="space-y-3" id="game-mode-selector-rack"></div>
+                    </div>
+
+                    <div class="bg-white border-4 border-gameDark rounded-3xl p-6 shadow-cartoon">
+                        <h3 class="heading-font text-xl text-gameDark mb-3">Preferences</h3>
+                        <div class="space-y-3">
+                            <div
+                                class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border-2 border-gameDark">
+                                <span class="text-sm"><i class="fa-solid fa-volume-high mr-2"></i>Sound FX /
+                                    Music</span>
+                                <button onclick="App.audio.toggleMuteState()" id="audio-mute-btn"
+                                    class="bg-gameGreen px-3 py-1 text-xs border-2 border-gameDark rounded-lg shadow-cartoon-sm active:translate-y-0.5">ACTIVE</button>
+                            </div>
+                            <div
+                                class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border-2 border-gameDark">
+                                <span class="text-sm"><i class="fa-solid fa-universal-access mr-2"></i>Font
+                                    Accessibility</span>
+                                <button onclick="App.ui.toggleLargeFont()"
+                                    class="bg-gray-200 px-3 py-1 text-xs border-2 border-gameDark rounded-lg shadow-cartoon-sm">INCREASE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-arena" class="view-panel hidden grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+            <div class="bg-white border-4 border-gameDark rounded-3xl p-5 shadow-cartoon space-y-4">
+                <div class="flex justify-between items-center">
+                    <button onclick="App.game.finishCurrentGameArenaSession()"
+                        class="bg-gamePink text-gameDark border-2 border-gameDark font-bold px-4 py-1.5 rounded-xl shadow-cartoon-sm hover:bg-rose-400 text-sm transition-all">
+                        <i class="fa-solid fa-flag-checkered"></i> Finish
+                    </button>
+                    <div class="px-3 py-1 bg-gray-100 border-2 border-gameDark rounded-xl text-xs uppercase"
+                        id="arena-info-difficulty">
+                        Focus: Addition
+                    </div>
+                </div>
+                <hr class="border-2 border-gameDark">
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <div class="bg-blue-50 border-2 border-gameDark rounded-2xl p-2 shadow-cartoon-sm">
+                        <span class="text-xs block uppercase tracking-wider text-gray-500">Score</span>
+                        <span id="arena-score" class="heading-font text-xl text-gameBlue">0</span>
+                    </div>
+                    <div
+                        class="bg-purple-50 border-2 border-gameDark rounded-2xl p-2 shadow-cartoon-sm relative overflow-hidden">
+                        <span class="text-xs block uppercase tracking-wider text-gray-500">Combo</span>
+                        <span id="arena-combo" class="heading-font text-xl text-gamePurple">x1</span>
+                        <div id="combo-pulse-bg"
+                            class="absolute inset-0 bg-gamePurple opacity-0 transition-opacity pointer-events-none">
+                        </div>
+                    </div>
+                </div>
+                <div id="arena-timer-container" class="space-y-1">
+                    <div class="flex justify-between items-center text-xs">
+                        <span>Time Remaining:</span>
+                        <span id="arena-timer-text" class="font-bold">45s</span>
+                    </div>
+                    <div
+                        class="bg-gray-200 border-2 border-gameDark h-4 rounded-full overflow-hidden shadow-inner-cartoon">
+                        <div id="arena-timer-progress" class="bg-gamePink h-full transition-all duration-1000"
+                            style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 border-2 border-gameDark rounded-2xl p-3 text-center">
+                    <span class="text-xs block text-gray-500 mb-1">Continuous Progress Timeline</span>
+                    <div class="flex justify-center gap-1 flex-wrap overflow-hidden h-6 items-center"
+                        id="arena-question-dots"></div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 bg-white border-4 border-gameDark rounded-3xl p-6 shadow-cartoon min-h-[450px] flex flex-col justify-between relative"
+                id="arena-workspace-card">
+                <div class="bg-purple-50 border-2 border-gameDark rounded-2xl p-3 flex items-center space-x-3 mb-4">
+                    <div class="text-3xl animate-bounce" id="arena-mascot-avatar">🐱</div>
+                    <div
+                        class="text-sm bg-white border-2 border-gameDark rounded-xl px-3 py-1.5 relative shadow-sm flex-1">
+                        <p id="arena-mascot-dialogue">Solve this math challenge to power our spaceship up!</p>
+                    </div>
+                </div>
+
+                <div class="my-auto py-6 text-center space-y-6">
+                    <div class="inline-block bg-slate-50 border-4 border-gameDark rounded-3xl px-8 py-6 shadow-inner-cartoon"
+                        id="question-box-wrapper">
+                        <h2 id="arena-question-text"
+                            class="heading-font text-3xl md:text-5xl tracking-wide text-gameDark">2 + 2 = ?</h2>
+                    </div>
+                    <p class="text-sm text-gray-400 italic" id="arena-interactive-tip">Select the single correct badge
+                        option below</p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6" id="arena-answers-grid"></div>
+
+                <div class="flex justify-between items-center mt-6 pt-4 border-t-2 border-gameDark">
+                    <div class="flex items-center gap-2">
+                        <button onclick="App.game.triggerDynamicHint()" id="hint-button-element"
+                            class="bg-gameYellow text-gameDark border-2 border-gameDark px-4 py-2 rounded-xl shadow-cartoon-sm hover:bg-amber-400 transition-all text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb"></i> Use Hint (<span id="hint-count-text">3</span> Left)
+                        </button>
+                        <button onclick="App.game.purchaseHintWithCoins()" id="buy-hint-btn"
+                            class="bg-gameGreen text-gameDark border-2 border-gameDark px-3 py-2 rounded-xl shadow-cartoon-sm hover:bg-emerald-400 transition-all text-sm hidden">
+                            Buy Hint (+1 <i class="fa-solid fa-lightbulb text-amber-500"></i>) for 10 🪙
+                        </button>
+                    </div>
+                    <span class="text-xs text-gray-400 uppercase font-bold" id="arena-world-identifier-tag">Current
+                        World: Space World</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-parent" class="view-panel hidden space-y-6">
+            <div
+                class="flex justify-between items-center bg-white border-4 border-gameDark rounded-2xl p-4 shadow-cartoon">
+                <div>
+                    <h2 class="heading-font text-2xl text-gamePurple">Parental Diagnostic & Analytics Dashboard</h2>
+                    <p class="text-sm text-gray-500">Real-time pedagogical metrics and tracking data based on
+                        performance profiles</p>
+                </div>
+                <button onclick="App.router.navigate('dashboard')"
+                    class="bg-gameDark text-white border-2 border-gameDark px-4 py-2 rounded-xl shadow-cartoon-sm hover:bg-gray-700 text-sm">
+                    Back to Child View <i class="fa-solid fa-right-from-bracket ml-1"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white border-4 border-gameDark rounded-2xl p-4 shadow-cartoon text-center">
+                    <span class="text-xs uppercase text-gray-500 font-bold block">Total Practice Sessions</span>
+                    <span id="p-metric-sessions" class="heading-font text-3xl text-gamePurple">0</span>
+                </div>
+                <div class="bg-white border-4 border-gameDark rounded-2xl p-4 shadow-cartoon text-center">
+                    <span class="text-xs uppercase text-gray-500 font-bold block">Average Dynamic Accuracy</span>
+                    <span id="p-metric-accuracy" class="heading-font text-3xl text-gameGreen">0%</span>
+                </div>
+                <div class="bg-white border-4 border-gameDark rounded-2xl p-4 shadow-cartoon text-center">
+                    <span class="text-xs uppercase text-gray-500 font-bold block">Total Solved Challenges</span>
+                    <span id="p-metric-solved" class="heading-font text-3xl text-gameBlue">0</span>
+                </div>
+                <div class="bg-white border-4 border-gameDark rounded-2xl p-4 shadow-cartoon text-center">
+                    <span class="text-xs uppercase text-gray-500 font-bold block">Time Invested (Est.)</span>
+                    <span id="p-metric-time" class="heading-font text-3xl text-gamePink">0 mins</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white border-4 border-gameDark rounded-3xl p-5 shadow-cartoon">
+                    <h3 class="heading-font text-lg text-gameDark mb-3">Topic Strengths vs Weaknesses Breakdown</h3>
+                    <div class="h-64 relative">
+                        <canvas id="parentChartCategories"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white border-4 border-gameDark rounded-3xl p-5 shadow-cartoon">
+                    <h3 class="heading-font text-lg text-gameDark mb-3">Recent Progress Tracking Timeline</h3>
+                    <div class="h-64 relative">
+                        <canvas id="parentChartTimeline"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border-4 border-gameDark rounded-3xl p-6 shadow-cartoon">
+                <h3 class="heading-font text-xl text-gameDark mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-brain text-gamePink"></i> AI Diagnostic Recommendation Matrix
+                </h3>
+                <div class="divide-y-2 divide-gray-100" id="parent-recommendations-list"></div>
+            </div>
+        </section>
+
+        <section id="screen-profile"
+            class="view-panel hidden max-w-xl mx-auto w-full bg-white border-4 border-gameDark rounded-3xl p-6 shadow-cartoon">
+            <h2 class="heading-font text-2xl text-gamePurple text-center mb-4">Edit Explorer Profile</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-1">Update Character Name</label>
+                    <input type="text" id="profile-name-input" class="w-full border-4 border-gameDark rounded-xl p-2">
+                </div>
+                <div>
+                    <label class="block text-sm mb-2">Change Avatar Companion</label>
+                    <div class="grid grid-cols-5 gap-2" id="profile-avatar-grid"></div>
+                </div>
+                <hr class="border-2 border-gameDark my-2">
+                <button onclick="App.auth.saveProfileEdits()"
+                    class="w-full bg-gameGreen border-2 border-gameDark py-2 rounded-xl shadow-cartoon-sm font-bold uppercase tracking-wider">Save
+                    Configuration Changes</button>
+                <button onclick="App.auth.resetAllGameData()"
+                    class="w-full bg-gamePink text-white border-2 border-gameDark py-2 rounded-xl shadow-cartoon-sm font-bold text-xs uppercase tracking-wider mt-4">Wipe
+                    All Account Progress</button>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="reward-modal"
+        class="fixed inset-0 bg-gameDark/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div id="reward-modal-card"
+            class="bg-white border-4 border-gameDark rounded-3xl max-w-sm w-full p-6 shadow-cartoon-lg text-center transform scale-90 opacity-0 transition-all duration-300">
+            <div class="text-6xl mb-2 animate-bounce" id="reward-modal-icon">🏆</div>
+            <h3 class="heading-font text-2xl text-gamePurple mb-1" id="reward-modal-title">Level Up!</h3>
+            <p class="text-sm text-gray-500 mb-4" id="reward-modal-desc">Fantastic! You completed the challenge cleanly.
+            </p>
+
+            <div
+                class="bg-gray-50 border-2 border-gameDark rounded-2xl p-3 grid grid-cols-3 gap-2 mb-4 font-bold text-sm">
+                <div class="text-amber-600"><i class="fa-solid fa-star"></i> <span id="reward-gain-stars">+0</span>
+                </div>
+                <div class="text-yellow-600"><i class="fa-solid fa-coins"></i> <span id="reward-gain-coins">+0</span>
+                </div>
+                <div class="text-purple-600"><i class="fa-solid fa-bolt"></i> <span id="reward-gain-xp">+0 XP</span>
+                </div>
+            </div>
+
+            <button onclick="App.ui.closeRewardModal()"
+                class="w-full bg-gameYellow text-gameDark border-2 border-gameDark py-2 rounded-xl font-bold heading-font shadow-cartoon-sm active:translate-y-0.5 transition-all">
+                AWESOME! <i class="fa-solid fa-thumbs-up"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="parent-gate-modal"
+        class="fixed inset-0 bg-gameDark/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white border-4 border-gameDark rounded-3xl max-w-sm w-full p-6 shadow-cartoon-lg">
+            <div class="text-center mb-4">
+                <div
+                    class="w-12 h-12 bg-gamePink rounded-full flex items-center justify-center text-white mx-auto border-2 border-gameDark mb-2 shadow-cartoon-sm">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h4 class="heading-font text-xl text-gameDark">Adult Verification Gate</h4>
+                <p class="text-xs text-gray-400 mt-0.5">Please solve this security prompt to access data dashboards.</p>
+            </div>
+            <div class="bg-slate-100 border-2 border-gameDark p-4 rounded-xl text-center text-xl font-bold mb-4"
+                id="parent-gate-question">
+                7 x 8 = ?
+            </div>
+            <input type="number" id="parent-gate-answer" placeholder="Your Answer"
+                class="w-full border-4 border-gameDark rounded-xl p-2 text-center text-lg mb-4 focus:outline-none">
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="App.ui.closeParentVerification()"
+                    class="bg-gray-200 border-2 border-gameDark py-2 rounded-xl font-bold text-xs">CANCEL</button>
+                <button onclick="App.ui.verifyParentGateSubmit()"
+                    class="bg-gameGreen border-2 border-gameDark py-2 rounded-xl font-bold text-xs shadow-cartoon-sm">PROCEED</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
