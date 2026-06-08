@@ -1,0 +1,20 @@
+body {
+    font-family: "Quicksand", sans-serif;
+    font-weight: 700;
+    user-select: none;
+}
+.heading-font {
+    font-family: "Fredoka One", cursive;
+}
+::-webkit-scrollbar {
+    width: 12px;
+}
+::-webkit-scrollbar-track {
+    background: #F1F2F6;
+    border-left: 4px solid #2d3436;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #6c5ce7;
+    border: 3px solid #f1f2f6;
+    border-radius: 10px;
+}
